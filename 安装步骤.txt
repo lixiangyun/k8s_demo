@@ -1,0 +1,55 @@
+环境：ubuntu16.04.3 
+
+1、配置GRUB启动选项
+vi /etc/default/grub 
+
+2、开启cgroup配置
+GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
+  
+3、打开内核配置
+vi config-4.4.0-87-generic
+
+CONFIG_RESOURCE_COUNTERS=y
+CONFIG_MEMCG=y
+CONFIG_MEMCG_SWAP=y
+CONFIG_MEMCG_SWAP_ENABLED=y
+CONFIG_MEMCG_KMEM=y
+
+4、更新grub配置
+update-grub
+
+5、复位vm
+reboot
+
+6、查看
+cat /proc/cmdline
+
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-87-generic root=UUID=42e977c3-cacb-4b34-9847-770c6846c9d4 ro cgroup_enable=memory swapaccount=1 quiet
+
+7、docker info
+告警消失
+
+
+8、启动etcd
+docker run --net=host -d gcr.io/google_containers/etcd:2.0.12 /usr/local/bin/etcd --addr=127.0.0.1:4001 --bind-addr=0.0.0.0:4001 --data-dir=/var/etcd/data
+
+9、启动master服务
+
+docker run \
+    --volume=/:/rootfs:ro \
+    --volume=/sys:/sys:ro \
+    --volume=/dev:/dev \
+    --volume=/var/lib/docker/:/var/lib/docker:ro \
+    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+    --volume=/var/run:/var/run:rw \
+    --net=host \
+    --pid=host \
+    --privileged=true \
+    -d \
+    gcr.io/google_containers/hyperkube:v1.0.1 \
+    /hyperkube kubelet --containerized --hostname-override=&quot;127.0.0.1&quot; --address=&quot;0.0.0.0&quot; --api-servers=http://localhost:8080 --config=/etc/kubernetes/manifests
+这一步实际上运行的是 kubelet ，并启动了一个包含其他master组件的[pod](../userguide/pods.md）。
+
+
+10、运行service proxy
+docker run -d --net=host --privileged gcr.io/google_containers/hyperkube:v1.0.1 /hyperkube proxy --master=http://127.0.0.1:8080 --v=2
