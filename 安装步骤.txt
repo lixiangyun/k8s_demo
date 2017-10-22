@@ -48,8 +48,18 @@ docker run \
     -d \
     gcr.io/google_containers/hyperkube:v1.0.1 \
     /hyperkube kubelet --containerized --hostname-override=&quot;127.0.0.1&quot; --address=&quot;0.0.0.0&quot; --api-servers=http://localhost:8080 --config=/etc/kubernetes/manifests
+	
 这一步实际上运行的是 kubelet ，并启动了一个包含其他master组件的[pod](../userguide/pods.md）。
 
 
 10、运行service proxy
 docker run -d --net=host --privileged gcr.io/google_containers/hyperkube:v1.0.1 /hyperkube proxy --master=http://127.0.0.1:8080 --v=2
+
+
+docker run --net=host -d daocloud.io/daocloud/coreos_etcd:v3.0.17 /usr/local/bin/etcd --addr=127.0.0.1:4001 --bind-addr=0.0.0.0:4001 --data-dir=/var/etcd/data
+
+docker pull daocloud.io/daocloud/coreos_etcd:v3.0.17
+
+docker pull daocloud.io/daocloud/coreos_hyperkube:v1.6.7_coreos.0
+
+https://hub.daocloud.io/
