@@ -56,10 +56,5 @@ docker run \
 docker run -d --net=host --privileged gcr.io/google_containers/hyperkube:v1.0.1 /hyperkube proxy --master=http://127.0.0.1:8080 --v=2
 
 
-docker run --net=host -d daocloud.io/daocloud/coreos_etcd:v3.0.17 /usr/local/bin/etcd --addr=127.0.0.1:4001 --bind-addr=0.0.0.0:4001 --data-dir=/var/etcd/data
-
-docker pull daocloud.io/daocloud/coreos_etcd:v3.0.17
-
-docker pull daocloud.io/daocloud/coreos_hyperkube:v1.6.7_coreos.0
-
-https://hub.daocloud.io/
+docker pull gcr.io/google_containers/etcd:2.0.12
+docker pull gcr.io/google_containers/hyperkube:v1.0.1
