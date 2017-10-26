@@ -31,28 +31,31 @@ BOOT_IMAGE=/boot/vmlinuz-4.4.0-87-generic root=UUID=42e977c3-cacb-4b34-9847-770c
 
 
 8、启动etcd
-docker run --net=host -d gcr.io/google_containers/etcd:2.0.12 /usr/local/bin/etcd --addr=127.0.0.1:4001 --bind-addr=0.0.0.0:4001 --data-dir=/var/etcd/data
+docker run \
+    --net=host \
+    -d \
+    gcr.io/google_containers/etcd:2.0.12 \
+    /usr/local/bin/etcd \
+    --addr=127.0.0.1:4001 \
+    --bind-addr=0.0.0.0:4001 \
+    --data-dir=/var/etcd/data 
 
 9、启动master服务
-
-docker run --volume=/:/rootfs:ro --volume=/sys:/sys:ro --volume=/dev:/dev --volume=/var/lib/docker/:/var/lib/docker:ro     --volume=/var/lib/kubelet/:/var/lib/kubelet:rw  --volume=/var/run:/var/run:rw  --net=host  --pid=host  --privileged=true  -d     gcr.io/google_containers/hyperkube:v1.0.1 /hyperkube kubelet --containerized --hostname-override="127.0.0.1" --address="0.0.0.0" --api-servers=http://localhost:8080 --config=/etc/kubernetes/manifests
 
 docker run \
     --volume=/:/rootfs:ro \
     --volume=/sys:/sys:ro \
     --volume=/dev:/dev \
     --volume=/var/lib/docker/:/var/lib/docker:ro \
-    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw  \
-    --volume=/var/run:/var/run:rw  \
-    --net=host  \
-    --pid=host  \
-    --privileged=true  \
+    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+    --volume=/var/run:/var/run:rw \
+    --net=host \
+    --pid=host \
+    --privileged=true \
     -d \
     gcr.io/google_containers/hyperkube:v1.0.1 \
-    /hyperkube kubelet \
-    --containerized \
-    --hostname-override="127.0.0.1" \
-    --address="0.0.0.0" \
+    /hyperkube kubelet --containerized \
+    --hostname-override="127.0.0.1" --address="0.0.0.0" \
     --api-servers=http://localhost:8080 \
     --config=/etc/kubernetes/manifests
 	
@@ -60,8 +63,12 @@ docker run \
 
 
 10、运行service proxy
-docker run -d --net=host --privileged gcr.io/google_containers/hyperkube:v1.0.1 /hyperkube proxy --master=http://127.0.0.1:8080 --v=2
-
+docker run \
+    -d \
+    --net=host \
+    --privileged \
+    gcr.io/google_containers/hyperkube:v1.0.1 \
+    /hyperkube proxy --master=http://127.0.0.1:8080 --v=2
 
 docker pull gcr.io/google_containers/etcd:2.0.12
 docker pull gcr.io/google_containers/hyperkube:v1.0.1
