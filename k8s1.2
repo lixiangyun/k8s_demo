@@ -29,3 +29,118 @@ tar zxvf kubernetes/server/kubernetes-server-linux-amd64.tar.gz
 
 
 
+
+
+route add default gw 128.5.0.1
+
+master:
+
+docker load -i kube-apiserver.tar
+docker load -i kube-controller-manager.tar 
+docker load -i kube-scheduler.tar
+docker images
+
+docker run -d --net=host --restart=always --name=etcd -v /var/etcd/data:/var/etcd/data kubernetes/etcd:2.0.5 /usr/local/bin/etcd   --addr=128.5.64.94:4001 --bind-addr=0.0.0.0:4001 --data-dir=/var/etcd/data
+
+
+all:
+
+tar zxvf flannel-0.5.5-linux-amd64.tar.gz
+
+./flannel-0.5.5/flanneld --etcd-endpoints=http://128.5.64.94:4001 --etcd-prefix=/qinghua.github.io/network --iface=eth1 > flannel.log 2>&1 &
+
+cat flannel.log
+
+
+source /run/flannel/subnet.env
+sudo sh -c "echo DOCKER_OPTS=\\\"--bip=$FLANNEL_SUBNET --mtu=$FLANNEL_MTU\\\" >> /etc/sysconfig/docker"
+sudo service docker restart
+
+
+master:
+
+docker run -d --name=apiserver --net=host \
+  gcr.io/google_containers/kube-apiserver:e68c6af15d4672feef7022e94ee4d9af \
+  kube-apiserver \
+  --insecure-bind-address=128.5.64.94 \
+  --service-cluster-ip-range=11.0.0.0/16 \
+  --etcd-servers=http://128.5.64.94:4001
+  
+  
+docker run -d --name=cm \
+  gcr.io/google_containers/kube-controller-manager:b9107c794e0564bf11719dc554213f7b \
+  kube-controller-manager \
+  --master=128.5.64.94:8080 
+  
+  
+docker run -d \
+  --name=scheduler \
+  gcr.io/google_containers/kube-scheduler:903b34d5ed7367ec4dddf846675613c9 \
+  kube-scheduler \
+  --master=128.5.64.94:8080
+  
+  
+./kubectl -s 128.5.64.94:8080 version
+
+alias kubectl="/home/kubectl -s 128.5.64.94:8080"
+
+
+
+
+
+
+
+
+
+node1、2
+
+
+unset https_proxy
+unset http_proxy
+unset no_proxy
+
+
+NODE_IP=`ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | cut -d' ' -f1`
+sudo ./kubelet --api-servers=128.5.64.94:8080 --node-ip=$NODE_IP > kubelet.log 2>&1 &
+cat kubelet.log
+
+
+
+master查看：
+
+unset https_proxy
+unset http_proxy
+unset no_proxy
+
+kubectl get no
+
+
+
+
+最后启动kube-proxy：
+node1 node2
+sudo ./kube-proxy --master=128.5.64.94:8080 > proxy.log 2>&1 &
+cat proxy.log
+
+
+
+
+
+
+
+
+
+
+	
+docker load -i kubernetes/addons/gcr.io~google_containers~pause:2.0.tar
+
+
+kubectl create -f tomcat.yaml
+
+	
+kubectl describe po tomcat
+
+kubectl get po
+kubectl get rc
+kubectl get svc
+kubectl get ep
